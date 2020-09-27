@@ -1,0 +1,64 @@
+---
+title: "The Most Distrusted Political Party in Canada"
+author: "Joanne Sun"
+date: "2020-09-27"
+abstract: "During both the 2015 and 2019 federal election, the Conservatives remain to be the most distrusted party according to the Canadian Election Study data. After four years of Liberals in power, more and more Canadians are dissatisfied with the party's leadership, especially for Albertans and Saskatchewanians."
+output: html_document
+bibliography: references.bib
+nocite: | 
+  @ces2015, @ces2019, @cesR,@devtools, @R, @rmarkdown
+---
+
+
+
+<div id="abstract" class="section level1">
+<h1>Abstract</h1>
+<p>During both the 2015 and 2019 federal election, the Conservatives remain to be the most distrusted party according to the Canadian Election Study data. After four years of Liberals in power, more and more Canadians are dissatisfied with the party’s leadership, especially for Albertans and Saskatchewanians.</p>
+</div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>Election surveys always attract social scientists’ interests. Scholars try to use surveys to guide predictions of election results. For whom people will vote? It seems to be the ultimate question in any survey study. However, sometimes, people are reluctant to reveal their real picks. Interestingly, they are less likely to lie on who they dislike. That’s why this report will take a look at which party people said they would not vote. The results are quite interesting as we can identify some distinctive regional patterns. It is also clear to see how people changed their minds after an election cycle. The analysis itself may not provide enough information on why the regional discrepancy exists. However, it could remind us that people living in different parts of this country have different needs and concerns.</p>
+<p>In this analysis, we make two kinds of comparison. We first parallelly compare the data among provinces in the same election - the 2019 federal election and the 2015 election. Then we examine the change of voters’ attitudes from 2015 to 2019.</p>
+<p>It is worth mentioning that the result could not serve as evidence to make any causal assertion. Instead, it flags the federal government’s policy issues in dealing with regional affairs, and it is inspiring for political scientists working on public policy study.</p>
+</div>
+<div id="data" class="section level1">
+<h1>Data</h1>
+<p>The Canadian Election Study (CES) is a series of large-scale surveys that have been conducted prior, and immediately after, each Canadian federal election since 1965. The purpose of CES is to document the attitudes of Canadians during and after each election. (Stephenson et al., 2020) The dataset used in this article is a subset of CES, which only contains the online survey of the 2019 Canadian federal election and a combination of web and phone surveys from the 2015 election. In both cases, we use only the campaign period data.</p>
+<p>The original dataset is giant with more than 600 variables, each representing a question in the survey. Here we will only focus on responses to the question: are there any parties that you would absolutely not vote for? We filter out all non-responses and keep the ones with meaningful answers only. The dataset shrinks to having only five variables: the year of birth of the respondents, the gender, the education, the province of residence, and the party which the respondent considers not going to vote for. Though this article will only make extensive use of the province and the voting attitude data, the other variables are included to hint at possible biases during the data collection.</p>
+</div>
+<div id="discussion" class="section level1">
+<h1>Discussion</h1>
+<p>Before proceed reading, it is necessary to emphasize the limitations of this analysis, especially the ones due to the lack of data. During the data cleaning process, the size of the two datasets has been dramatically shrunk. At the final stage, the 2015 data contains only 87 observations, and the 2019 dataset has only 97 entries, which reduces the credibility of this analysis. But the results could still offer some insights.</p>
+<p>We first take a look at the 2015 data. One obvious thing is that people living in Nunavut seems really don’t like the Conservatives, given that the party receives a 100% vote. However, if we examine the data a bit closer, we realize that there is only one participant in Nunavut. The only one happens to disapprove of the Conservatives very much, so at least in 2015, Nunavut’s data is not reliable. The same issue also exists in Northwest Territories and Yukon’s 2015 data. Things got a bit better in 2019. We have more participants in 2019’s data. During the 2019 federal election, the Conservatives and the NDP are Nunavut people’s two most distrusted parties.</p>
+<p>Another interesting observation is about the change in people’s attitudes. The plots imply that after four years under the Liberal Party, the dissatisfaction level of the Liberals increases in almost all provinces. The trend is most evident in Alberta and Saskatchewan. The results seem to be consistent with the news about Western Canadian provinces complaining about the federal government’s neglect.</p>
+<p>Overall, during both elections, the Conservatives are the most distrusted party in all provinces.</p>
+<p><img src="/post/2015-07-23-r-rmarkdown_files/figure-html/plot2015-1.png" width="672" /></p>
+<p><img src="/post/2015-07-23-r-rmarkdown_files/figure-html/plot2019-1.png" width="672" /></p>
+<div id="weaknesses-and-next-steps" class="section level2">
+<h2>Weaknesses and next steps</h2>
+<p>We have talked a lot about the worrying quality of the datasets so far. The small sample size limits how much credible information the dataset could provide us. In addition to the sample size, there are some other issues in the data collection phase. One of them is the different interpretations of survey questions. For example, in the 2019 survey, only people living in Quebec can choose Bloc Quebecois. However, in 2015, this restriction did not apply. In future studies, more careful criteria should be developed to address these differences. Moreover, a carefully designed weight scheme is necessary to reflect population-wide attitudes better.</p>
+</div>
+</div>
+<div id="references" class="section level1 unnumbered">
+<h1>References</h1>
+<div id="refs" class="references">
+<div id="ref-ces2015">
+<p>Fournier, Fred Cutler, Patrick, and Dietlind Stolle. 2015. “The 2015 Canadian Election Study.” <a href="https://ces-eec.arts.ubc.ca/english-section/surveys/">https://ces-eec.arts.ubc.ca/english-section/surveys/</a>.</p>
+</div>
+<div id="ref-devtools">
+<p>Hadley Wickham, Jim Hester, and Winston Chang. 2020. “devtools: Tools to Make Developing R Packages Easier.” <a href="https://devtools.r-lib.org/,https://github.com/r-lib/devtools">https://devtools.r-lib.org/,https://github.com/r-lib/devtools</a>.</p>
+</div>
+<div id="ref-cesR">
+<p>Hodgetts, Paul A., and Rohan Alexander. 2020. “cesR: Access the CES Datasets a Little Easier. R package version 0.1.0.” <a href="https://hodgettsp.github.io/cesR/index.html">https://hodgettsp.github.io/cesR/index.html</a>.</p>
+</div>
+<div id="ref-rmarkdown">
+<p>JJ Allaire, Jonathan McPherson, Yihui Xie, and Richard Iannone. 2020. “rmarkdown: Dynamic Documents for R. R package version 2.3.” <a href="https://rmarkdown.rstudio.com">https://rmarkdown.rstudio.com</a>.</p>
+</div>
+<div id="ref-ces2019">
+<p>Stephenson, Laura B, Allison Harell, Daniel Rubenson, and Peter John Loewen. 2020. “2019 Canadian Election Study - Online Survey.” Harvard Dataverse. <a href="https://doi.org/10.7910/DVN/DUS88V">https://doi.org/10.7910/DVN/DUS88V</a>.</p>
+</div>
+<div id="ref-R">
+<p>Team, R Core. 2020. “R: A language and environment for statistical computing. R, Foundation for Statistical Computing, Vienna, Austria.” <a href="https://www.R-project.org/">https://www.R-project.org/</a>.</p>
+</div>
+</div>
+</div>

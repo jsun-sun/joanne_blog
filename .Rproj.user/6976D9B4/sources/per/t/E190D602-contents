@@ -1,0 +1,180 @@
+---
+title: "The Most Distrusted Political Parties in Canada"
+author: "Joanne Sun"
+date: "`r Sys.Date()`"
+abstract: "During both the 2015 and 2019 federal election, the Conservatives remain to be the most distrusted party according to the Canadian Election Study data. After four years of Liberals in power, more and more Canadians are dissatisfied with the party's leadership, especially for Albertans and Saskatchewanians."
+output: html_document
+bibliography: references.bib
+nocite: | 
+  @ces2015, @ces2019, @cesR,@devtools, @R, @rmarkdown
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+options(encoding = 'UTF-8')
+## install cesR package from GitHub
+# devtools::intall_github("hodgettsp/cesR")
+
+## install tidyverse, visdat, skimr and labelled packages
+# install.packages(tidyverse)
+# install.packages(visdat)
+# install.packages(skimr)
+# install.packages(labelled)
+# install.packages("plyr")
+
+
+# load tidyverse, visdat, cesR, skimr, labelled and RColorBrewer packages
+library(tidyverse)
+library(visdat)
+library(cesR)
+library(skimr)
+library(labelled)
+library(RColorBrewer)
+
+# load 2019 campaign period web survey data
+get_ces("ces2019_web")
+ces2019_web <- to_factor(ces2019_web)
+
+
+# load 2015 campaign period survey data
+get_ces("ces2015_combo")
+ces2015_combo <- to_factor(ces2015_combo)
+
+
+```
+
+# Abstract
+
+During both the 2015 and 2019 federal election, the Conservatives remain to be the most distrusted party according to the Canadian Election Study data. After four years of Liberals in power, more and more Canadians are dissatisfied with the party's leadership, especially for Albertans and Saskatchewanians.
+
+# Introduction
+
+Election surveys always attract social scientists' interests. Scholars try to use surveys to guide predictions of election results. For whom people will vote? It seems to be the ultimate question in any survey study. However, sometimes, people are reluctant to reveal their real picks. Interestingly, they are less likely to lie on who they dislike. That's why this report will take a look at which party people said they would not vote. The results are quite interesting as we can identify some distinctive regional patterns. It is also clear to see how people changed their minds after an election cycle.  The analysis itself may not provide enough information on why the regional discrepancy exists. However, it could remind us that people living in different parts of this country have different needs and concerns. 
+
+In this analysis, we make two kinds of comparison. We first parallelly compare the data among provinces in the same election - the 2019 federal election and the 2015 election. Then we examine the change of voters' attitudes from 2015 to 2019. 
+
+It is worth mentioning that the result could not serve as evidence to make any causal assertion. Instead, it flags the federal government's policy issues in dealing with regional affairs, and it is inspiring for political scientists working on public policy study. 
+
+```{r datacleaning, include=FALSE}
+# data cleaning
+ces2019_web <- ces2019_web %>% 
+  filter(get_not_vote_for == 1) %>% 
+  select(cps19_yob, cps19_gender, cps19_province, cps19_education,cps19_not_vote_for_1, cps19_not_vote_for_2, cps19_not_vote_for_3, cps19_not_vote_for_4, cps19_not_vote_for_5, cps19_not_vote_for_6, cps19_not_vote_for_7, cps19_not_vote_for_8, cps19_not_vote_for_9) %>% 
+  mutate(cps19_not_vote_for = coalesce(cps19_not_vote_for_1, cps19_not_vote_for_2, cps19_not_vote_for_3, cps19_not_vote_for_4, cps19_not_vote_for_5, cps19_not_vote_for_6, cps19_not_vote_for_7, cps19_not_vote_for_8, cps19_not_vote_for_9)) %>%
+  filter(!is.na(cps19_not_vote_for)) %>% 
+           select(cps19_yob, cps19_gender, cps19_province, cps19_education,cps19_not_vote_for)
+
+# fix an encoding issue and standardize category names
+ces2019_web$cps19_not_vote_for <- gsub("Bloc Qu\xe9b\xe9cois","Bloc Quebecois", ces2019_web$cps19_not_vote_for)
+ces2019_web$cps19_not_vote_for <- gsub("ndp","NDP", ces2019_web$cps19_not_vote_for)
+ces2019_web$cps19_not_vote_for[ces2019_web$cps19_not_vote_for == "Another party (please specify)"] <- "Other"
+ces2019_web$cps19_not_vote_for <- gsub("I could vote for any of the parties","None", ces2019_web$cps19_not_vote_for)
+
+# data cleaning 
+ces2015_combo <- ces2015_combo %>% 
+  filter(!is.na(notvote)) %>% 
+  select(age, sex_r, province, education, notvote) %>% 
+  dplyr::rename(year_of_birth = age, 
+         gender = sex_r, 
+         not_vote_for = notvote) %>% 
+  filter(not_vote_for != 1000) %>%
+  filter(not_vote_for != 10) %>%
+  filter(province !=1000)
+
+# merge subcategories to a new category
+levels(ces2015_combo$not_vote_for)[levels(ces2015_combo$not_vote_for)%in%c("don't know\\undecided","refused","will spoil ballot", "Don't know/ Prefer no to answer")] <- "Don't know/ Prefer no to answer"
+
+# Make levels consistent with data from 2019
+ces2015_combo$not_vote_for <- gsub("ndp","NDP", ces2015_combo$not_vote_for)
+ces2015_combo$not_vote_for <- gsub("Conservatives","Conservative Party", ces2015_combo$not_vote_for)
+ces2015_combo$not_vote_for <- gsub("Liberal","Liberal Party", ces2015_combo$not_vote_for)
+ces2015_combo$not_vote_for[ces2015_combo$not_vote_for == "other (specify)"] <- "Other"
+ces2015_combo$not_vote_for <- gsub("none/no","None", ces2015_combo$not_vote_for)
+ces2015_combo$not_vote_for
+ces2015_combo$province <- gsub("Nfld","Newfoundland and Labrador", ces2015_combo$province)
+ces2015_combo$province <- gsub("pei","Prince Edward Island", ces2015_combo$province)
+ces2015_combo$province <- gsub("ns","Nova Scotia", ces2015_combo$province)
+ces2015_combo$province <- gsub("nb","New Brunswick", ces2015_combo$province)
+ces2015_combo$province <- gsub("Sask","Saskatchewan", ces2015_combo$province)
+ces2015_combo$province <- gsub("bc","British Columbia", ces2015_combo$province)
+ces2015_combo$province <- gsub("nwt","Northwest Territories", ces2015_combo$province)
+ces2015_combo$province <- gsub("nunavut","Nunavut", ces2015_combo$province)
+
+```
+
+
+# Data
+
+The Canadian Election Study (CES) is a series of large-scale surveys that have been conducted prior, and immediately after, each Canadian federal election since 1965. The purpose of CES is to document the attitudes of Canadians during and after each election. (Stephenson et al., 2020) The dataset used in this article is a subset of CES, which only contains the online survey of the 2019 Canadian federal election and a combination of web and phone surveys from the 2015 election. In both cases, we use only the campaign period data. 
+
+The original dataset is giant with more than 600 variables, each representing a question in the survey. Here we will only focus on responses to the question: are there any parties that you would absolutely not vote for? We filter out all non-responses and keep the ones with meaningful answers only. The dataset shrinks to having only five variables:  the year of birth of the respondents, the gender, the education, the province of residence, and the party which the respondent considers not going to vote for. Though this article will only make extensive use of the province and the voting attitude data, the other variables are included to hint at possible biases during the data collection. 
+
+
+# Discussion
+
+Before proceed reading, it is necessary to emphasize the limitations of this analysis, especially the ones due to the lack of data. During the data cleaning process, the size of the two datasets has been dramatically shrunk. At the final stage, the 2015 data contains only 87 observations, and the 2019 dataset has only 97 entries, which reduces the credibility of this analysis. But the results could still offer some insights. 
+
+We first take a look at the 2015 data. One obvious thing is that people living in Nunavut seems really don't like the Conservatives, given that the party receives a 100% vote. However, if we examine the data a bit closer, we realize that there is only one participant in Nunavut. The only one happens to disapprove of the Conservatives very much, so at least in 2015, Nunavut's data is not reliable. The same issue also exists in Northwest Territories and Yukon's 2015 data. Things got a bit better in 2019. We have more participants in 2019's data. During the 2019 federal election, the Conservatives and the NDP are Nunavut people's two most distrusted parties. 
+
+Another interesting observation is about the change in people's attitudes. The plots imply that after four years under the Liberal Party, the dissatisfaction level of the Liberals increases in almost all provinces. The trend is most evident in Alberta and Saskatchewan. The results seem to be consistent with the news about Western Canadian provinces complaining about the federal government's neglect. 
+
+Overall, during both elections, the Conservatives are the most distrusted party in all provinces. 
+
+
+
+
+```{r plot2015, warning=FALSE, message=FALSE}
+
+# calculate the percentage 
+ces2015_party_by_province <- ces2015_combo %>% 
+  group_by(province, not_vote_for) %>% 
+  summarize(N = n()) %>% 
+  mutate(freq = N / sum(N), pct = round((freq*100), 0))
+
+# plot voters' picks of distrusted political party by province
+p2015 <- ggplot(data= ces2015_party_by_province, aes(x = province, y = pct, fill = not_vote_for)) +
+  geom_col(position = "dodge2") +
+  labs(x = NULL,
+       y = "Percent",
+       fill = "Party",
+       title = "The party will not vote for",
+       subtitle = "Survey conducted during 2015 Canadian federal election",
+       caption = "Data: Canadian Election Survey.") + 
+  scale_fill_brewer(palette="Paired") +
+  theme(axis.text.x = element_text(angle = 90))
+p2015
+
+```
+
+```{r plot2019, warning=FALSE, message=FALSE}
+
+# calculate the percentage 
+ces2019_party_by_province <- ces2019_web %>% 
+  group_by(cps19_province, cps19_not_vote_for) %>% 
+  summarize(N = n()) %>% 
+  mutate(freq = N / sum(N), pct = round((freq*100), 0))
+# plot voters' picks of distrusted political party by province
+p2019 <- ggplot(data= ces2019_party_by_province, aes(x = cps19_province, y = pct, fill = cps19_not_vote_for)) +
+  geom_col(position = "dodge2") +
+  labs(x = NULL,
+       y = "Percent",
+       fill = "Party",
+       title = "The party will not vote for",
+       subtitle = "Survey conducted during 2019 Canadian federal election",
+       caption = "Data: Canadian Election Survey.") + 
+  scale_fill_brewer(palette="Paired") +
+  theme(axis.text.x = element_text(angle = 90))
+p2019
+```
+
+
+## Weaknesses and next steps
+
+We have talked a lot about the worrying quality of the datasets so far. The small sample size limits how much credible information the dataset could provide us. In addition to the sample size, there are some other issues in the data collection phase. One of them is the different interpretations of survey questions. For example, in the 2019 survey, only people living in Quebec can choose Bloc Quebecois. However, in 2015, this restriction did not apply. In future studies, more careful criteria should be developed to address these differences. Moreover, a carefully designed weight scheme is necessary to reflect population-wide attitudes better. 
+
+
+
+
+
+
+# References
